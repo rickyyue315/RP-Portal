@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum SubmissionStatus {
+  PENDING
+  PROCESSED
+}
+
+model User {
+  id           String       @id @default(cuid())
+  email        String       @unique
+  passwordHash String
+  name         String
+  role         Role         @default(USER)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  submissions  Submission[]
+
+  @@index([email])
+}
+
+model CustomFieldDef {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  label     String
+  type      String   @default("text")
+  options   Json?
+  required  Boolean  @default(false)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SkuMaster {
+  id          String   @id @default(cuid())
+  sku         String   @unique
+  description String?
+  category    String?
+  unit        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([sku])
+}
+
+model SiteMaster {
+  id        String   @id @default(cuid())
+  siteCode  String   @unique
+  siteName  String?
+  region    String?
+  address   String?
+  contact   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([siteCode])
+}
+
+model Submission {
+  id            String           @id @default(cuid())
+  userId        String
+  user          User             @relation(fields: [userId], references: [id])
+  sku           String
+  siteCode      String
+  quantity      Int?
+  unitPrice     Decimal?         @db.Decimal(12, 2)
+  remarks       String?
+  customFields  Json?
+  status        SubmissionStatus @default(PENDING)
+  submittedAt   DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  updatedById   String?
+  processedAt   DateTime?
+  processedById String?
+
+  @@index([userId])
+  @@index([sku])
+  @@index([siteCode])
+  @@index([status])
+  @@index([submittedAt])
+}
+
+model Archive {
+  id            String           @id @default(cuid())
+  originalId    String
+  userId        String
+  sku           String
+  siteCode      String
+  quantity      Int?
+  unitPrice     Decimal?         @db.Decimal(12, 2)
+  remarks       String?
+  customFields  Json?
+  status        SubmissionStatus
+  submittedAt   DateTime
+  updatedAt     DateTime
+  processedAt   DateTime?
+  archivedAt    DateTime         @default(now())
+
+  @@index([submittedAt])
+  @@index([archivedAt])
+}
