@@ -1,4 +1,4 @@
-FROM node:20-alpine AS base
+FROM node:22-alpine AS base
 
 FROM base AS deps
 WORKDIR /app
@@ -35,4 +35,4 @@ EXPOSE 8080
 ENV PORT=8080
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["sh", "-c", "prisma migrate deploy --datasource-url \"$DATABASE_URL\" && node server.js"]
+CMD ["sh", "-c", "prisma migrate deploy && node server.js"]
