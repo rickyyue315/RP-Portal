@@ -18,6 +18,7 @@ interface CustomFieldItem {
   type: string;
   options: string | null;
   required: boolean;
+  adminOnly: boolean;
   sortOrder: number;
 }
 
@@ -31,6 +32,7 @@ export function CustomFieldsManager() {
     type: "text" as string,
     options: "",
     required: false,
+    adminOnly: false,
     sortOrder: 0,
   });
 
@@ -55,6 +57,7 @@ export function CustomFieldsManager() {
       type: form.type,
       options: form.type === "select" && form.options ? form.options.split(",").map((s) => s.trim()) : null,
       required: form.required,
+      adminOnly: form.adminOnly,
       sortOrder: form.sortOrder,
     };
 
@@ -67,7 +70,7 @@ export function CustomFieldsManager() {
     if (res.ok) {
       toast.success("Custom field added");
       setDialogOpen(false);
-      setForm({ name: "", label: "", type: "text", options: "", required: false, sortOrder: 0 });
+      setForm({ name: "", label: "", type: "text", options: "", required: false, adminOnly: false, sortOrder: 0 });
       fetchFields();
     } else {
       toast.error("Failed to add field");
@@ -98,6 +101,11 @@ export function CustomFieldsManager() {
       key: "required",
       header: "Required",
       render: (item: CustomFieldItem) => (item.required ? "Yes" : "No"),
+    },
+    {
+      key: "adminOnly",
+      header: "Admin Only",
+      render: (item: CustomFieldItem) => (item.adminOnly ? "Yes" : "No"),
     },
     {
       key: "options",
@@ -149,6 +157,10 @@ export function CustomFieldsManager() {
             <div className="flex items-center gap-2">
               <input type="checkbox" checked={form.required} onChange={(e) => setForm((f) => ({ ...f, required: e.target.checked }))} />
               <Label>Required</Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <input type="checkbox" checked={form.adminOnly} onChange={(e) => setForm((f) => ({ ...f, adminOnly: e.target.checked }))} />
+              <Label>Admin Only (hidden from user template)</Label>
             </div>
             <div><Label>Sort Order</Label><Input type="number" value={form.sortOrder} onChange={(e) => setForm((f) => ({ ...f, sortOrder: parseInt(e.target.value) || 0 }))} /></div>
             <Button onClick={handleAdd} disabled={!form.name || !form.label}>Add Field</Button>

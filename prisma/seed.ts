@@ -62,7 +62,7 @@ async function main() {
       "ND50-Vendor Return",
     ]), required: false, sortOrder: 4 },
     { name: "rpParamsChange", label: "RP Parameters Change Request", type: "text", required: false, sortOrder: 5 },
-    { name: "replyCompletionDate", label: "RP Type Reply Completion Date", type: "date", required: false, sortOrder: 6 },
+    { name: "replyCompletionDate", label: "RP Type Reply Completion Date", type: "date", required: false, adminOnly: true, sortOrder: 6 },
   ];
   for (const cf of customFields) {
     await prisma.customFieldDef.upsert({

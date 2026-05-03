@@ -9,6 +9,7 @@ const customFieldSchema = z.object({
   type: z.enum(["text", "number", "select", "date"]).default("text"),
   options: z.array(z.string()).nullable().optional(),
   required: z.boolean().default(false),
+  adminOnly: z.boolean().default(false),
   sortOrder: z.number().int().default(0),
 });
 
@@ -42,6 +43,7 @@ export async function POST(req: NextRequest) {
         type: parsed.type,
         options: parsed.options ? JSON.stringify(parsed.options) : undefined,
         required: parsed.required,
+        adminOnly: parsed.adminOnly,
         sortOrder: parsed.sortOrder,
       },
     });

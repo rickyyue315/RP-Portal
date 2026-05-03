@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Upload } from "lucide-react";
+import { Download } from "lucide-react";
 
 interface ParsedRow {
   sku: string;
@@ -28,6 +29,29 @@ export function BulkPasteDialog() {
   const [preview, setPreview] = useState<ParsedRow[]>([]);
   const [loading, setLoading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [downloading, setDownloading] = useState(false);
+
+  async function handleDownloadTemplate() {
+    setDownloading(true);
+    try {
+      const res = await fetch("/api/submissions/template");
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "NDRF_Template.xlsx";
+        a.click();
+        URL.revokeObjectURL(url);
+      } else {
+        toast.error("Failed to download template");
+      }
+    } catch {
+      toast.error("Failed to download template");
+    } finally {
+      setDownloading(false);
+    }
+  }
 
   function parseTabSeparated(text: string): ParsedRow[] {
     return text
@@ -189,6 +213,12 @@ export function BulkPasteDialog() {
             <p className="mb-2 text-sm text-muted-foreground">
               Upload Excel (.xlsx) file matching the NDRF Request template, or CSV with headers: SKU, Shop Code, Brand, RP Type, Supply source, Safety stock, ND Code, RP Parameters Change Request, Remark
             </p>
+            <div className="mb-3">
+              <Button variant="outline" size="sm" onClick={handleDownloadTemplate} disabled={downloading}>
+                <Download className="mr-1 h-4 w-4" />
+                {downloading ? "Downloading..." : "Download Excel Template"}
+              </Button>
+            </div>
             <input
               ref={fileRef}
               type="file"
