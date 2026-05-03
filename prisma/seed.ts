@@ -35,9 +35,12 @@ async function main() {
   }
 
   const customFields = [
-    { name: "priority", label: "Priority", type: "select", options: JSON.stringify(["low", "medium", "high"]), required: false, sortOrder: 1 },
-    { name: "department", label: "Department", type: "text", required: false, sortOrder: 2 },
-    { name: "deliveryDate", label: "Expected Delivery Date", type: "date", required: false, sortOrder: 3 },
+    { name: "rpType", label: "RP Type", type: "select", options: JSON.stringify(["New", "Change", "Cancel"]), required: false, sortOrder: 1 },
+    { name: "supplySource", label: "Supply Source", type: "text", required: false, sortOrder: 2 },
+    { name: "safetyStock", label: "Safety Stock", type: "number", required: false, sortOrder: 3 },
+    { name: "ndCode", label: "ND Code", type: "text", required: false, sortOrder: 4 },
+    { name: "rpParamsChange", label: "RP Parameters Change Request", type: "text", required: false, sortOrder: 5 },
+    { name: "replyDate", label: "Reply Completion Date", type: "date", required: false, sortOrder: 6 },
   ];
   for (const cf of customFields) {
     await prisma.customFieldDef.upsert({

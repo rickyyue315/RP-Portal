@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { formatDate, formatCurrency } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 import { ArrowLeft, Edit, Trash2, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 
@@ -106,27 +106,23 @@ export function SubmissionDetail({ id, isAdmin, userId }: SubmissionDetailProps)
               <p className="font-medium">{data.sku}</p>
             </div>
             <div>
-              <span className="text-muted-foreground">Site Code</span>
+              <span className="text-muted-foreground">Shop Code</span>
               <p className="font-medium">{data.siteCode}</p>
             </div>
             <div>
-              <span className="text-muted-foreground">Quantity</span>
-              <p className="font-medium">{data.quantity ?? "-"}</p>
+              <span className="text-muted-foreground">Brand</span>
+              <p className="font-medium">{data.brand || "-"}</p>
             </div>
             <div>
-              <span className="text-muted-foreground">Unit Price</span>
-              <p className="font-medium">{formatCurrency(data.unitPrice)}</p>
-            </div>
-            <div>
-              <span className="text-muted-foreground">Remarks</span>
+              <span className="text-muted-foreground">Remark</span>
               <p className="font-medium">{data.remarks || "-"}</p>
             </div>
             <div>
-              <span className="text-muted-foreground">Submitted By</span>
+              <span className="text-muted-foreground">Requested By</span>
               <p className="font-medium">{data.user?.name || "-"}</p>
             </div>
             <div>
-              <span className="text-muted-foreground">Submitted At</span>
+              <span className="text-muted-foreground">Application Date</span>
               <p className="font-medium">{formatDate(data.submittedAt)}</p>
             </div>
             <div>

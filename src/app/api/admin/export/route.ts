@@ -35,14 +35,14 @@ export async function GET(req: NextRequest) {
     id: s.id,
     sku: s.sku,
     siteCode: s.siteCode,
-    quantity: s.quantity,
-    unitPrice: s.unitPrice ? Number(s.unitPrice) : null,
+    brand: s.brand,
     remarks: s.remarks,
     status: s.status,
     submittedAt: s.submittedAt,
     updatedAt: s.updatedAt,
     userName: s.user.name,
     processedAt: s.processedAt,
+    customFields: s.customFields as Record<string, unknown> | null,
   }));
 
   const buffer = await generateExcel(exportData);

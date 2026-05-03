@@ -6,8 +6,7 @@ import { z } from "zod";
 const updateSchema = z.object({
   sku: z.string().min(1).optional(),
   siteCode: z.string().min(1).optional(),
-  quantity: z.number().int().positive().nullable().optional(),
-  unitPrice: z.number().positive().nullable().optional(),
+  brand: z.string().nullable().optional(),
   remarks: z.string().nullable().optional(),
   customFields: z.record(z.string(), z.unknown()).nullable().optional(),
 });

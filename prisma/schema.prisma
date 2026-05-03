@@ -73,8 +73,7 @@ model Submission {
   user          User             @relation(fields: [userId], references: [id])
   sku           String
   siteCode      String
-  quantity      Int?
-  unitPrice     Decimal?         @db.Decimal(12, 2)
+  brand         String?
   remarks       String?
   customFields  Json?
   status        SubmissionStatus @default(PENDING)
@@ -97,8 +96,7 @@ model Archive {
   userId        String
   sku           String
   siteCode      String
-  quantity      Int?
-  unitPrice     Decimal?         @db.Decimal(12, 2)
+  brand         String?
   remarks       String?
   customFields  Json?
   status        SubmissionStatus

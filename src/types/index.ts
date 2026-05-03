@@ -20,8 +20,7 @@ export interface SubmissionItem {
   userId: string;
   sku: string;
   siteCode: string;
-  quantity: number | null;
-  unitPrice: number | null;
+  brand: string | null;
   remarks: string | null;
   customFields: Record<string, unknown> | null;
   status: "PENDING" | "PROCESSED";

@@ -6,8 +6,7 @@ import { z } from "zod";
 const createSchema = z.object({
   sku: z.string().min(1),
   siteCode: z.string().min(1),
-  quantity: z.number().int().positive().nullable().optional(),
-  unitPrice: z.number().positive().nullable().optional(),
+  brand: z.string().nullable().optional(),
   remarks: z.string().nullable().optional(),
   customFields: z.record(z.string(), z.unknown()).nullable().optional(),
 });
@@ -37,6 +36,7 @@ export async function GET(req: NextRequest) {
     where.OR = [
       { sku: { contains: search, mode: "insensitive" } },
       { siteCode: { contains: search, mode: "insensitive" } },
+      { brand: { contains: search, mode: "insensitive" } },
       { remarks: { contains: search, mode: "insensitive" } },
     ];
   }

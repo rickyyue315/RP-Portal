@@ -17,8 +17,7 @@ import { Upload } from "lucide-react";
 interface ParsedRow {
   sku: string;
   siteCode: string;
-  quantity?: number;
-  unitPrice?: number;
+  brand?: string;
   remarks?: string;
 }
 
@@ -38,9 +37,8 @@ export function BulkPasteDialog() {
         return {
           sku: cols[0]?.trim() || "",
           siteCode: cols[1]?.trim() || "",
-          quantity: cols[2] ? parseInt(cols[2]) : undefined,
-          unitPrice: cols[3] ? parseFloat(cols[3]) : undefined,
-          remarks: cols[4]?.trim() || undefined,
+          brand: cols[2]?.trim() || undefined,
+          remarks: cols[3]?.trim() || undefined,
         };
       })
       .filter((row) => row.sku && row.siteCode);
@@ -58,9 +56,8 @@ export function BulkPasteDialog() {
         return {
           sku: cols[0] || "",
           siteCode: cols[1] || "",
-          quantity: cols[2] ? parseInt(cols[2]) : undefined,
-          unitPrice: cols[3] ? parseFloat(cols[3]) : undefined,
-          remarks: cols[4] || undefined,
+          brand: cols[2] || undefined,
+          remarks: cols[3] || undefined,
         };
       })
       .filter((row) => row.sku && row.siteCode);
@@ -76,10 +73,9 @@ export function BulkPasteDialog() {
     return json
       .map((row) => ({
         sku: String(row.sku || row.SKU || "").trim(),
-        siteCode: String(row.siteCode || row["Site Code"] || row.site_code || "").trim(),
-        quantity: row.quantity || row.Quantity ? Number(row.quantity || row.Quantity) : undefined,
-        unitPrice: row.unitPrice || row["Unit Price"] ? Number(row.unitPrice || row["Unit Price"]) : undefined,
-        remarks: row.remarks || row.Remarks ? String(row.remarks || row.Remarks) : undefined,
+        siteCode: String(row.siteCode || row["Shop Code"] || row.site_code || row["Site Code"] || "").trim(),
+        brand: row.brand || row.Brand || row["Brand"] ? String(row.brand || row.Brand || row["Brand"]).trim() : undefined,
+        remarks: row.remarks || row.Remarks || row["Remark"] || row.remark ? String(row.remarks || row.Remarks || row["Remark"] || row.remark) : undefined,
       }))
       .filter((row) => row.sku && row.siteCode);
   }
@@ -102,7 +98,7 @@ export function BulkPasteDialog() {
       }
       setPasteData(
         rows
-          .map((r) => `${r.sku}\t${r.siteCode}\t${r.quantity || ""}\t${r.unitPrice || ""}\t${r.remarks || ""}`)
+          .map((r) => `${r.sku}\t${r.siteCode}\t${r.brand || ""}\t${r.remarks || ""}`)
           .join("\n")
       );
       setPreview(rows);
@@ -158,13 +154,13 @@ export function BulkPasteDialog() {
 
           <TabsContent value="paste">
             <p className="mb-2 text-sm text-muted-foreground">
-              Paste tab-separated data: SKU, Site Code, Quantity, Unit Price, Remarks
+              Paste tab-separated data: SKU, Shop Code, Brand, Remark
             </p>
             <Textarea
               value={pasteData}
               onChange={(e) => setPasteData(e.target.value)}
               rows={8}
-              placeholder={"SKU-001\tSITE-HK-01\t100\t25.50\tUrgent\nSKU-002\tSITE-HK-02\t50\t30.00\tNormal"}
+              placeholder={"SKU-001\tSITE-HK-01\tBrand A\tUrgent request\nSKU-002\tSITE-HK-02\tBrand B\tNormal"}
             />
             <Button onClick={handlePreview} className="mt-2" variant="secondary">
               Preview ({parseTabSeparated(pasteData).length} rows)
@@ -173,7 +169,7 @@ export function BulkPasteDialog() {
 
           <TabsContent value="file">
             <p className="mb-2 text-sm text-muted-foreground">
-              Upload CSV or Excel file: SKU, Site Code, Quantity, Unit Price, Remarks
+              Upload CSV or Excel file with columns: SKU, Shop Code, Brand, Remark
             </p>
             <input
               ref={fileRef}
@@ -193,10 +189,9 @@ export function BulkPasteDialog() {
                 <thead>
                   <tr className="border-b bg-muted/50">
                     <th className="p-2 text-left">SKU</th>
-                    <th className="p-2 text-left">Site Code</th>
-                    <th className="p-2 text-right">Qty</th>
-                    <th className="p-2 text-right">Price</th>
-                    <th className="p-2 text-left">Remarks</th>
+                    <th className="p-2 text-left">Shop Code</th>
+                    <th className="p-2 text-left">Brand</th>
+                    <th className="p-2 text-left">Remark</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -204,8 +199,7 @@ export function BulkPasteDialog() {
                     <tr key={i} className="border-b">
                       <td className="p-2">{r.sku}</td>
                       <td className="p-2">{r.siteCode}</td>
-                      <td className="p-2 text-right">{r.quantity}</td>
-                      <td className="p-2 text-right">{r.unitPrice}</td>
+                      <td className="p-2">{r.brand}</td>
                       <td className="p-2">{r.remarks}</td>
                     </tr>
                   ))}

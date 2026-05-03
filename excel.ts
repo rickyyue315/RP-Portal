@@ -4,14 +4,14 @@ export interface ExportRow {
   id: string;
   sku: string;
   siteCode: string;
-  quantity: number | null;
-  unitPrice: number | null;
+  brand: string | null;
   remarks: string | null;
   status: string;
   submittedAt: Date;
   updatedAt: Date;
   userName: string;
   processedAt: Date | null;
+  customFields?: Record<string, unknown> | null;
 }
 
 export async function generateExcel(
@@ -25,19 +25,26 @@ export async function generateExcel(
   const sheet = workbook.addWorksheet("Submissions");
 
   const columns: Partial<ExcelJS.Column>[] = [
-    { header: "ID", key: "id", width: 12 },
+    { header: "Application Date", key: "submittedAt", width: 20 },
+    { header: "Requested By", key: "userName", width: 20 },
+    { header: "Shop Code", key: "siteCode", width: 15 },
+    { header: "Brand", key: "brand", width: 15 },
     { header: "SKU", key: "sku", width: 15 },
-    { header: "Site Code", key: "siteCode", width: 15 },
-    { header: "Quantity", key: "quantity", width: 12 },
-    { header: "Unit Price", key: "unitPrice", width: 12 },
-    { header: "Total", key: "total", width: 14 },
-    { header: "Remarks", key: "remarks", width: 25 },
-    { header: "Status", key: "status", width: 12 },
-    { header: "Submitted By", key: "userName", width: 20 },
-    { header: "Submitted At", key: "submittedAt", width: 20 },
-    { header: "Last Updated", key: "updatedAt", width: 20 },
-    { header: "Processed At", key: "processedAt", width: 20 },
   ];
+
+  if (customFieldDefs) {
+    for (const cf of customFieldDefs) {
+      columns.push({ header: cf.label, key: `cf_${cf.name}`, width: 18 });
+    }
+  }
+
+  columns.push(
+    { header: "Remark", key: "remarks", width: 25 },
+    { header: "Status", key: "status", width: 12 },
+    { header: "Submitted At", key: "submittedAtFull", width: 20 },
+    { header: "Last Updated", key: "updatedAt", width: 20 },
+    { header: "Processed At", key: "processedAt", width: 20 }
+  );
 
   sheet.columns = columns;
 
@@ -50,22 +57,29 @@ export async function generateExcel(
   };
 
   for (const row of data) {
-    sheet.addRow({
-      id: row.id.slice(0, 8),
-      sku: row.sku,
-      siteCode: row.siteCode,
-      quantity: row.quantity,
-      unitPrice: row.unitPrice,
-      total: row.quantity && row.unitPrice ? row.quantity * row.unitPrice : null,
-      remarks: row.remarks,
-      status: row.status,
+    const rowData: Record<string, unknown> = {
+      submittedAt: row.submittedAt.toISOString().slice(0, 10),
       userName: row.userName,
-      submittedAt: row.submittedAt.toISOString().slice(0, 19).replace("T", " "),
-      updatedAt: row.updatedAt.toISOString().slice(0, 19).replace("T", " "),
-      processedAt: row.processedAt
-        ? row.processedAt.toISOString().slice(0, 19).replace("T", " ")
-        : "",
-    });
+      siteCode: row.siteCode,
+      brand: row.brand || "",
+      sku: row.sku,
+    };
+
+    if (customFieldDefs && row.customFields) {
+      for (const cf of customFieldDefs) {
+        rowData[`cf_${cf.name}`] = (row.customFields as Record<string, unknown>)[cf.name] ?? "";
+      }
+    }
+
+    rowData.remarks = row.remarks || "";
+    rowData.status = row.status;
+    rowData.submittedAtFull = row.submittedAt.toISOString().slice(0, 19).replace("T", " ");
+    rowData.updatedAt = row.updatedAt.toISOString().slice(0, 19).replace("T", " ");
+    rowData.processedAt = row.processedAt
+      ? row.processedAt.toISOString().slice(0, 19).replace("T", " ")
+      : "";
+
+    sheet.addRow(rowData);
   }
 
   sheet.autoFilter = {

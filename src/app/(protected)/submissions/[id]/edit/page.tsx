@@ -34,8 +34,7 @@ export default async function EditSubmissionPage({
               id: submission.id,
               sku: submission.sku,
               siteCode: submission.siteCode,
-              quantity: submission.quantity,
-              unitPrice: submission.unitPrice ? Number(submission.unitPrice) : null,
+              brand: submission.brand,
               remarks: submission.remarks,
               customFields: submission.customFields as Record<string, unknown> | null,
             }}

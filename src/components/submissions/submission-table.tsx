@@ -7,7 +7,7 @@ import { StatusBadge } from "@/components/shared/status-badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { formatDate, formatCurrency } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 import { Search, Plus } from "lucide-react";
 import Link from "next/link";
 
@@ -15,8 +15,7 @@ interface SubmissionItem {
   id: string;
   sku: string;
   siteCode: string;
-  quantity: number | null;
-  unitPrice: number | null;
+  brand: string | null;
   remarks: string | null;
   status: string;
   submittedAt: string;
@@ -70,21 +69,8 @@ export function SubmissionTable({ isAdmin }: SubmissionTableProps) {
   const columns = [
     { key: "id", header: "ID", render: (item: SubmissionItem) => item.id.slice(0, 8) },
     { key: "sku", header: "SKU" },
-    { key: "siteCode", header: "Site Code" },
-    { key: "quantity", header: "Qty" },
-    {
-      key: "unitPrice",
-      header: "Unit Price",
-      render: (item: SubmissionItem) => formatCurrency(item.unitPrice),
-    },
-    {
-      key: "total",
-      header: "Total",
-      render: (item: SubmissionItem) =>
-        item.quantity && item.unitPrice
-          ? formatCurrency(item.quantity * item.unitPrice)
-          : "-",
-    },
+    { key: "siteCode", header: "Shop Code" },
+    { key: "brand", header: "Brand", render: (item: SubmissionItem) => item.brand || "-" },
     {
       key: "status",
       header: "Status",
@@ -94,14 +80,14 @@ export function SubmissionTable({ isAdmin }: SubmissionTableProps) {
       ? [
           {
             key: "user" as const,
-            header: "Submitted By",
+            header: "Requested By",
             render: (item: SubmissionItem) => item.user.name,
           },
         ]
       : []),
     {
       key: "submittedAt",
-      header: "Submitted",
+      header: "Application Date",
       render: (item: SubmissionItem) => formatDate(item.submittedAt),
     },
   ];

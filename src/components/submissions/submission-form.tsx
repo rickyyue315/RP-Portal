@@ -37,8 +37,7 @@ interface SubmissionFormProps {
     id?: string;
     sku?: string;
     siteCode?: string;
-    quantity?: number | null;
-    unitPrice?: number | null;
+    brand?: string | null;
     remarks?: string | null;
     customFields?: Record<string, unknown> | null;
   };
@@ -50,8 +49,7 @@ export function SubmissionForm({ initialData }: SubmissionFormProps) {
 
   const [sku, setSku] = useState(initialData?.sku || "");
   const [siteCode, setSiteCode] = useState(initialData?.siteCode || "");
-  const [quantity, setQuantity] = useState(initialData?.quantity?.toString() || "");
-  const [unitPrice, setUnitPrice] = useState(initialData?.unitPrice?.toString() || "");
+  const [brand, setBrand] = useState(initialData?.brand || "");
   const [remarks, setRemarks] = useState(initialData?.remarks || "");
   const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>(
     (initialData?.customFields as Record<string, string>) || {}
@@ -110,8 +108,7 @@ export function SubmissionForm({ initialData }: SubmissionFormProps) {
     const payload = {
       sku: selectedSku?.sku || sku,
       siteCode: selectedSite?.siteCode || siteCode,
-      quantity: quantity ? parseInt(quantity) : null,
-      unitPrice: unitPrice ? parseFloat(unitPrice) : null,
+      brand: brand || null,
       remarks: remarks || null,
       customFields: Object.keys(customFieldValues).length > 0 ? customFieldValues : null,
     };
@@ -193,24 +190,13 @@ export function SubmissionForm({ initialData }: SubmissionFormProps) {
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="quantity">Quantity</Label>
+          <Label htmlFor="brand">Brand</Label>
           <Input
-            id="quantity"
-            type="number"
-            value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
-            placeholder="0"
-          />
-        </div>
-        <div>
-          <Label htmlFor="unitPrice">Unit Price</Label>
-          <Input
-            id="unitPrice"
-            type="number"
-            step="0.01"
-            value={unitPrice}
-            onChange={(e) => setUnitPrice(e.target.value)}
-            placeholder="0.00"
+            id="brand"
+            type="text"
+            value={brand}
+            onChange={(e) => setBrand(e.target.value)}
+            placeholder="Brand name"
           />
         </div>
       </div>
