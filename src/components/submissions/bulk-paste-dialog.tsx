@@ -19,6 +19,7 @@ interface ParsedRow {
   siteCode: string;
   brand?: string;
   remarks?: string;
+  customFields?: Record<string, unknown>;
 }
 
 export function BulkPasteDialog() {
@@ -71,12 +72,29 @@ export function BulkPasteDialog() {
     const json = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet);
 
     return json
-      .map((row) => ({
-        sku: String(row.sku || row.SKU || "").trim(),
-        siteCode: String(row.siteCode || row["Shop Code"] || row.site_code || row["Site Code"] || "").trim(),
-        brand: row.brand || row.Brand || row["Brand"] ? String(row.brand || row.Brand || row["Brand"]).trim() : undefined,
-        remarks: row.remarks || row.Remarks || row["Remark"] || row.remark ? String(row.remarks || row.Remarks || row["Remark"] || row.remark) : undefined,
-      }))
+      .map((row) => {
+        const customFields: Record<string, unknown> = {};
+        const rpType = row["RP Type"];
+        if (rpType) customFields.rpType = String(rpType);
+        const supplySource = row["Supply source"];
+        if (supplySource) customFields.supplySource = String(supplySource);
+        const safetyStock = row["Safety stock"];
+        if (safetyStock) customFields.safetyStock = Number(safetyStock);
+        const ndCode = row["ND Code"];
+        if (ndCode) customFields.ndCode = String(ndCode);
+        const rpParamsChange = row["RP Parameters Change Request"];
+        if (rpParamsChange) customFields.rpParamsChange = String(rpParamsChange);
+        const replyCompletionDate = row["RP Type 回覆完成日期"];
+        if (replyCompletionDate) customFields.replyCompletionDate = String(replyCompletionDate);
+
+        return {
+          sku: String(row.sku || row.SKU || row["SKU"] || "").trim(),
+          siteCode: String(row.siteCode || row["Shop Code"] || row.site_code || row["Site Code"] || "").trim(),
+          brand: row.brand || row.Brand || row["Brand"] ? String(row.brand || row.Brand || row["Brand"]).trim() : undefined,
+          remarks: row.remarks || row.Remarks || row["Remark"] || row.remark ? String(row.remarks || row.Remarks || row["Remark"] || row.remark) : undefined,
+          customFields: Object.keys(customFields).length > 0 ? customFields : undefined,
+        };
+      })
       .filter((row) => row.sku && row.siteCode);
   }
 
@@ -169,7 +187,7 @@ export function BulkPasteDialog() {
 
           <TabsContent value="file">
             <p className="mb-2 text-sm text-muted-foreground">
-              Upload CSV or Excel file with columns: SKU, Shop Code, Brand, Remark
+              Upload Excel (.xlsx) file matching the NDRF Request template, or CSV with headers: SKU, Shop Code, Brand, RP Type, Supply source, Safety stock, ND Code, RP Parameters Change Request, Remark
             </p>
             <input
               ref={fileRef}
@@ -191,6 +209,8 @@ export function BulkPasteDialog() {
                     <th className="p-2 text-left">SKU</th>
                     <th className="p-2 text-left">Shop Code</th>
                     <th className="p-2 text-left">Brand</th>
+                    <th className="p-2 text-left">RP Type</th>
+                    <th className="p-2 text-left">ND Code</th>
                     <th className="p-2 text-left">Remark</th>
                   </tr>
                 </thead>
@@ -199,13 +219,15 @@ export function BulkPasteDialog() {
                     <tr key={i} className="border-b">
                       <td className="p-2">{r.sku}</td>
                       <td className="p-2">{r.siteCode}</td>
-                      <td className="p-2">{r.brand}</td>
-                      <td className="p-2">{r.remarks}</td>
+                      <td className="p-2">{r.brand || "-"}</td>
+                      <td className="p-2">{(r.customFields?.rpType as string) || "-"}</td>
+                      <td className="p-2">{(r.customFields?.ndCode as string) || "-"}</td>
+                      <td className="p-2">{r.remarks || "-"}</td>
                     </tr>
                   ))}
                   {preview.length > 20 && (
                     <tr>
-                      <td colSpan={5} className="p-2 text-center text-muted-foreground">
+                      <td colSpan={6} className="p-2 text-center text-muted-foreground">
                         ...and {preview.length - 20} more
                       </td>
                     </tr>
