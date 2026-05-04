@@ -25,6 +25,7 @@ interface SidebarProps {
 const userNavItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/submissions", label: "Submissions", icon: FileText },
+  { href: "/admin/users", label: "Profile", icon: Users },
 ];
 
 const adminNavItems = [

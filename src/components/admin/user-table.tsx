@@ -23,9 +23,10 @@ interface UserItem {
 
 interface UserTableProps {
   currentUserRole: string;
+  currentUserId: string;
 }
 
-export function UserTable({ currentUserRole }: UserTableProps) {
+export function UserTable({ currentUserRole, currentUserId }: UserTableProps) {
   const [users, setUsers] = useState<UserItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -33,12 +34,19 @@ export function UserTable({ currentUserRole }: UserTableProps) {
 
   const isAdmin = currentUserRole === "ADMIN";
   const isModerator = currentUserRole === "MODERATOR";
+  const isUser = currentUserRole === "USER";
 
   const [newUserEmail, setNewUserEmail] = useState("");
   const [newUserName, setNewUserName] = useState("");
   const [newUserPassword, setNewUserPassword] = useState("");
   const [newUserRole, setNewUserRole] = useState("USER");
   const [addLoading, setAddLoading] = useState(false);
+
+  const [pwDialogOpen, setPwDialogOpen] = useState(false);
+  const [pwTarget, setPwTarget] = useState<UserItem | null>(null);
+  const [pwNewPassword, setPwNewPassword] = useState("");
+  const [pwConfirmPassword, setPwConfirmPassword] = useState("");
+  const [pwLoading, setPwLoading] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -55,6 +63,54 @@ export function UserTable({ currentUserRole }: UserTableProps) {
       .then(setUsers)
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
+  }
+
+  function openPasswordDialog(user: UserItem) {
+    setPwTarget(user);
+    setPwNewPassword("");
+    setPwConfirmPassword("");
+    setPwDialogOpen(true);
+  }
+
+  async function handleChangePassword(e: React.FormEvent) {
+    e.preventDefault();
+
+    if (pwNewPassword !== pwConfirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+
+    if (pwNewPassword.length < 8) {
+      toast.error("Password must be at least 8 characters");
+      return;
+    }
+
+    if (!pwTarget) return;
+
+    setPwLoading(true);
+
+    const res = await fetch(`/api/admin/users/${pwTarget.id}/password`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: pwNewPassword }),
+    });
+
+    if (res.ok) {
+      toast.success("Password updated");
+      setPwDialogOpen(false);
+      setPwTarget(null);
+    } else {
+      const data = await res.json();
+      toast.error(data.error || "Failed to update password");
+    }
+    setPwLoading(false);
+  }
+
+  function canChangePassword(user: UserItem): boolean {
+    if (isAdmin) return true;
+    if (isModerator) return user.role !== "ADMIN";
+    if (isUser) return user.id === currentUserId;
+    return false;
   }
 
   async function handleAddUser(e: React.FormEvent) {
@@ -170,6 +226,11 @@ export function UserTable({ currentUserRole }: UserTableProps) {
       header: "Actions",
       render: (item: UserItem) => (
         <div className="flex items-center gap-2">
+          {canChangePassword(item) && (
+            <Button variant="outline" size="sm" onClick={() => openPasswordDialog(item)}>
+              Change Password
+            </Button>
+          )}
           {isAdmin && (
             <Select
               value={item.role}
@@ -284,6 +345,43 @@ export function UserTable({ currentUserRole }: UserTableProps) {
         </div>
       )}
       <DataTable columns={columns} data={users} />
+
+      <Dialog open={pwDialogOpen} onOpenChange={setPwDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change Password{pwTarget ? ` — ${pwTarget.name}` : ""}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleChangePassword} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="pw-new">New Password</Label>
+              <Input
+                id="pw-new"
+                type="password"
+                value={pwNewPassword}
+                onChange={(e) => setPwNewPassword(e.target.value)}
+                required
+                placeholder="Min 8 characters"
+                minLength={8}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="pw-confirm">Confirm New Password</Label>
+              <Input
+                id="pw-confirm"
+                type="password"
+                value={pwConfirmPassword}
+                onChange={(e) => setPwConfirmPassword(e.target.value)}
+                required
+                placeholder="Re-enter password"
+                minLength={8}
+              />
+            </div>
+            <Button type="submit" className="w-full" disabled={pwLoading}>
+              {pwLoading ? "Updating..." : "Update Password"}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

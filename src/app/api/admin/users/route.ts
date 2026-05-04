@@ -6,8 +6,31 @@ import { z } from "zod";
 
 export async function GET() {
   const session = await auth();
-  if (!session || !["ADMIN", "MODERATOR"].includes((session.user as any).role)) {
+  if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const sessionUser = session.user as any;
+
+  if (sessionUser.role === "USER") {
+    const user = await prisma.user.findUnique({
+      where: { id: sessionUser.id },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        suspended: true,
+        createdAt: true,
+        _count: { select: { submissions: true } },
+      },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    return NextResponse.json([user]);
   }
 
   const users = await prisma.user.findMany({
