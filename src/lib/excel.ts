@@ -15,8 +15,7 @@ export interface ExportRow {
 }
 
 export async function generateExcel(
-  data: ExportRow[],
-  customFieldDefs?: { name: string; label: string }[]
+  data: ExportRow[]
 ): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook();
   workbook.creator = "NDRF Portal";
@@ -30,21 +29,17 @@ export async function generateExcel(
     { header: "Shop Code", key: "siteCode", width: 15 },
     { header: "Brand", key: "brand", width: 15 },
     { header: "SKU", key: "sku", width: 15 },
-  ];
-
-  if (customFieldDefs) {
-    for (const cf of customFieldDefs) {
-      columns.push({ header: cf.label, key: `cf_${cf.name}`, width: 18 });
-    }
-  }
-
-  columns.push(
+    { header: "RP Type", key: "cf_rpType", width: 15 },
+    { header: "Supply source", key: "cf_supplySource", width: 18 },
+    { header: "Safety stock", key: "cf_safetyStock", width: 15 },
+    { header: "ND Code", key: "cf_ndCode", width: 40 },
+    { header: "RP Parameters Change Request", key: "cf_rpParamsChange", width: 30 },
     { header: "Remark", key: "remarks", width: 25 },
     { header: "Status", key: "status", width: 12 },
     { header: "Submitted At", key: "submittedAtFull", width: 20 },
     { header: "Last Updated", key: "updatedAt", width: 20 },
-    { header: "Processed At", key: "processedAt", width: 20 }
-  );
+    { header: "Processed At", key: "processedAt", width: 20 },
+  ];
 
   sheet.columns = columns;
 
@@ -65,12 +60,12 @@ export async function generateExcel(
       sku: row.sku,
     };
 
-    if (customFieldDefs && row.customFields) {
-      for (const cf of customFieldDefs) {
-        rowData[`cf_${cf.name}`] = (row.customFields as Record<string, unknown>)[cf.name] ?? "";
-      }
-    }
-
+    const cf = row.customFields as Record<string, unknown> | null;
+    rowData.cf_rpType = cf?.rpType ?? "";
+    rowData.cf_supplySource = cf?.supplySource ?? "";
+    rowData.cf_safetyStock = cf?.safetyStock ?? "";
+    rowData.cf_ndCode = cf?.ndCode ?? "";
+    rowData.cf_rpParamsChange = cf?.rpParamsChange ?? "";
     rowData.remarks = row.remarks || "";
     rowData.status = row.status;
     rowData.submittedAtFull = row.submittedAt.toISOString().slice(0, 19).replace("T", " ");
@@ -101,16 +96,18 @@ export async function generateTemplate(
   const sheet = workbook.addWorksheet("Template");
 
   const columns: Partial<ExcelJS.Column>[] = [
-    { header: "SKU", key: "sku", width: 15 },
+    { header: "Application Date", key: "applicationDate", width: 20 },
+    { header: "Requested by", key: "requestedBy", width: 20 },
     { header: "Shop Code", key: "siteCode", width: 15 },
     { header: "Brand", key: "brand", width: 15 },
+    { header: "SKU", key: "sku", width: 15 },
+    { header: "RP Type", key: "rpType", width: 15 },
+    { header: "Supply source", key: "supplySource", width: 18 },
+    { header: "Safety stock", key: "safetyStock", width: 15 },
+    { header: "ND Code", key: "ndCode", width: 40 },
+    { header: "RP Parameters Change Request", key: "rpParamsChange", width: 30 },
+    { header: "Remark", key: "remarks", width: 25 },
   ];
-
-  for (const cf of customFieldDefs) {
-    columns.push({ header: cf.label, key: cf.name, width: 18 });
-  }
-
-  columns.push({ header: "Remark", key: "remarks", width: 25 });
 
   sheet.columns = columns;
 
@@ -122,28 +119,47 @@ export async function generateTemplate(
     fgColor: { argb: "FF2563EB" },
   };
 
-  const sampleRow: Record<string, string> = {
-    sku: "SKU-001",
+  sheet.addRow({
+    applicationDate: new Date().toISOString().slice(0, 10),
+    requestedBy: "",
     siteCode: "SITE-HK-01",
     brand: "",
-  };
-  for (const cf of customFieldDefs) {
-    sampleRow[cf.name] = "";
-  }
-  sampleRow.remarks = "";
-  sheet.addRow(sampleRow);
+    sku: "SKU-001",
+    rpType: "",
+    supplySource: "",
+    safetyStock: "",
+    ndCode: "",
+    rpParamsChange: "",
+    remarks: "",
+  });
 
-  for (const cf of customFieldDefs) {
-    if (cf.type === "select" && cf.options) {
-      const opts: string[] = JSON.parse(cf.options);
-      const colIdx = columns.findIndex((c) => c.key === cf.name) + 1;
-      for (let r = 2; r <= 100; r++) {
-        sheet.getCell(r, colIdx).dataValidation = {
-          type: "list",
-          allowBlank: true,
-          formulae: [`"${opts.join(",")}"`],
-        };
-      }
+  const rpTypeDef = customFieldDefs.find((f) => f.name === "rpType");
+  if (rpTypeDef?.type === "select" && rpTypeDef.options) {
+    const opts: string[] = JSON.parse(rpTypeDef.options);
+    const colIdx = columns.findIndex((c) => c.key === "rpType") + 1;
+    for (let r = 2; r <= 100; r++) {
+      sheet.getCell(r, colIdx).dataValidation = {
+        type: "list",
+        allowBlank: true,
+        formulae: [`"${opts.join(",")}"`],
+      };
+    }
+  }
+
+  const ndCodeDef = customFieldDefs.find((f) => f.name === "ndCode");
+  if (ndCodeDef?.type === "select" && ndCodeDef.options) {
+    const opts: string[] = JSON.parse(ndCodeDef.options);
+    const colIdx = columns.findIndex((c) => c.key === "ndCode") + 1;
+    const refSheet = workbook.addWorksheet("ND Code Options");
+    opts.forEach((opt, i) => {
+      refSheet.getCell(i + 1, 1).value = opt;
+    });
+    for (let r = 2; r <= 100; r++) {
+      sheet.getCell(r, colIdx).dataValidation = {
+        type: "list",
+        allowBlank: true,
+        formulae: [`'ND Code Options'!$A$1:$A$${opts.length}`],
+      };
     }
   }
 

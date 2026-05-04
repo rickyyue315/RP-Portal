@@ -56,16 +56,14 @@ export function QuickExcelUpload() {
         const customFields: Record<string, unknown> = {};
         const rpType = row["RP Type"];
         if (rpType) customFields.rpType = String(rpType);
-        const supplySource = row["Supply source"];
+        const supplySource = row["Supply source"] || row["Supply Source"];
         if (supplySource) customFields.supplySource = String(supplySource);
-        const safetyStock = row["Safety stock"];
+        const safetyStock = row["Safety stock"] || row["Safety Stock"];
         if (safetyStock) customFields.safetyStock = Number(safetyStock);
         const ndCode = row["ND Code"];
         if (ndCode) customFields.ndCode = String(ndCode);
         const rpParamsChange = row["RP Parameters Change Request"];
         if (rpParamsChange) customFields.rpParamsChange = String(rpParamsChange);
-        const replyCompletionDate = row["RP Type \u56DE\u8986\u5B8C\u6210\u65E5\u671F"];
-        if (replyCompletionDate) customFields.replyCompletionDate = String(replyCompletionDate);
 
         return {
           sku: String(row.sku || row.SKU || row["SKU"] || "").trim(),
@@ -88,10 +86,10 @@ export function QuickExcelUpload() {
       .map((line) => {
         const cols = line.split(",").map((c) => c.trim().replace(/^"|"$/g, ""));
         return {
-          sku: cols[0] || "",
-          siteCode: cols[1] || "",
-          brand: cols[2] || undefined,
-          remarks: cols[3] || undefined,
+          sku: cols[4] || cols[0] || "",
+          siteCode: cols[2] || cols[1] || "",
+          brand: cols[3] || cols[2] || undefined,
+          remarks: cols[10] || cols[5] || undefined,
         };
       })
       .filter((row) => row.sku && row.siteCode);

@@ -103,16 +103,14 @@ export function BulkPasteDialog() {
         const customFields: Record<string, unknown> = {};
         const rpType = row["RP Type"];
         if (rpType) customFields.rpType = String(rpType);
-        const supplySource = row["Supply source"];
+        const supplySource = row["Supply source"] || row["Supply Source"];
         if (supplySource) customFields.supplySource = String(supplySource);
-        const safetyStock = row["Safety stock"];
+        const safetyStock = row["Safety stock"] || row["Safety Stock"];
         if (safetyStock) customFields.safetyStock = Number(safetyStock);
         const ndCode = row["ND Code"];
         if (ndCode) customFields.ndCode = String(ndCode);
         const rpParamsChange = row["RP Parameters Change Request"];
         if (rpParamsChange) customFields.rpParamsChange = String(rpParamsChange);
-        const replyCompletionDate = row["RP Type 回覆完成日期"];
-        if (replyCompletionDate) customFields.replyCompletionDate = String(replyCompletionDate);
 
         return {
           sku: String(row.sku || row.SKU || row["SKU"] || "").trim(),
