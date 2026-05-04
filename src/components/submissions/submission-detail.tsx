@@ -43,7 +43,6 @@ export function SubmissionDetail({ id, isAdmin, userId }: SubmissionDetailProps)
     const res = await fetch(`/api/submissions/${id}/process`, { method: "PATCH" });
     if (res.ok) {
       toast.success("Marked as processed");
-      router.refresh();
       setData({ ...data, status: "PROCESSED" });
     } else {
       toast.error("Failed to process");

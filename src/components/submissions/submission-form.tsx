@@ -126,7 +126,6 @@ export function SubmissionForm({ initialData }: SubmissionFormProps) {
       if (res.ok) {
         toast.success(isEdit ? "Submission updated" : "Submission created");
         router.push("/submissions");
-        router.refresh();
       } else {
         const err = await res.json();
         toast.error(err.error || "Failed to submit");
