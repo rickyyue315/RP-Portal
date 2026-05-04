@@ -9,25 +9,30 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const customFieldDefs = await prisma.customFieldDef.findMany({
-    where: { adminOnly: false },
-    orderBy: { sortOrder: "asc" },
-  });
+  try {
+    const customFieldDefs = await prisma.customFieldDef.findMany({
+      where: { adminOnly: false },
+      orderBy: { sortOrder: "asc" },
+    });
 
-  const templateFields = customFieldDefs.map((f) => ({
-    name: f.name,
-    label: f.label,
-    type: f.type,
-    options: f.options ? JSON.stringify(f.options) : null,
-    required: f.required,
-  }));
+    const templateFields = customFieldDefs.map((f) => ({
+      name: f.name,
+      label: f.label,
+      type: f.type,
+      options: f.options ? JSON.stringify(f.options) : null,
+      required: f.required,
+    }));
 
-  const buffer = await generateTemplate(templateFields);
+    const buffer = await generateTemplate(templateFields);
 
-  return new NextResponse(new Uint8Array(buffer), {
-    headers: {
-      "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "Content-Disposition": 'attachment; filename="NDRF_Template.xlsx"',
-    },
-  });
+    return new NextResponse(new Uint8Array(buffer), {
+      headers: {
+        "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "Content-Disposition": 'attachment; filename="NDRF_Template.xlsx"',
+      },
+    });
+  } catch (error) {
+    console.error("Template generation error:", error);
+    return NextResponse.json({ error: "Failed to generate template" }, { status: 500 });
+  }
 }

@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { SubmissionTable } from "@/components/submissions/submission-table";
 import { BulkPasteDialog } from "@/components/submissions/bulk-paste-dialog";
+import { QuickExcelUpload } from "@/components/submissions/quick-excel-upload";
 
 export default async function SubmissionsPage() {
   const session = await auth();
@@ -13,6 +14,7 @@ export default async function SubmissionsPage() {
         <h1 className="text-2xl font-bold">Submissions</h1>
         <BulkPasteDialog />
       </div>
+      <QuickExcelUpload />
       <SubmissionTable isAdmin={isAdmin} />
     </div>
   );

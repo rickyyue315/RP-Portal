@@ -41,10 +41,13 @@ export function BulkPasteDialog() {
         const a = document.createElement("a");
         a.href = url;
         a.download = "NDRF_Template.xlsx";
+        document.body.appendChild(a);
         a.click();
+        document.body.removeChild(a);
         URL.revokeObjectURL(url);
       } else {
-        toast.error("Failed to download template");
+        const err = await res.json().catch(() => ({}));
+        toast.error(err.error || "Failed to download template");
       }
     } catch {
       toast.error("Failed to download template");
