@@ -39,7 +39,7 @@ const adminNavItems = [
 
 export function Sidebar({ role, collapsed, onToggle }: SidebarProps) {
   const pathname = usePathname();
-  const items = role === "ADMIN" ? adminNavItems : userNavItems;
+  const items = role === "ADMIN" || role === "MODERATOR" ? adminNavItems : userNavItems;
 
   return (
     <aside

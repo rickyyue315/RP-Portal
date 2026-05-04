@@ -13,7 +13,7 @@ const skuRowSchema = z.object({
 
 export async function POST(req: NextRequest) {
   const session = await auth();
-  if (!session || (session.user as any).role !== "ADMIN") {
+  if (!session || !["ADMIN", "MODERATOR"].includes((session.user as any).role)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

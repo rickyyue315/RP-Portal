@@ -10,6 +10,7 @@ datasource db {
 enum Role {
   USER
   ADMIN
+  MODERATOR
 }
 
 enum SubmissionStatus {
@@ -23,6 +24,7 @@ model User {
   passwordHash String
   name         String
   role         Role         @default(USER)
+  suspended    Boolean      @default(false)
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
   submissions  Submission[]
