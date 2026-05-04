@@ -12,18 +12,28 @@ export default async function DashboardPage() {
 
   const where = isAdmin ? {} : { userId: user?.id };
 
-  const [totalSubmissions, pendingCount, processedCount] = await Promise.all([
-    prisma.submission.count({ where }),
-    prisma.submission.count({ where: { ...where, status: "PENDING" } }),
-    prisma.submission.count({ where: { ...where, status: "PROCESSED" } }),
-  ]);
+  const [totalSubmissions, pendingCount, processedCount, recentSubmissions, adminStats] =
+    await Promise.all([
+      prisma.submission.count({ where }),
+      prisma.submission.count({ where: { ...where, status: "PENDING" } }),
+      prisma.submission.count({ where: { ...where, status: "PROCESSED" } }),
+      prisma.submission.findMany({
+        where,
+        include: { user: { select: { name: true } } },
+        orderBy: { submittedAt: "desc" },
+        take: 5,
+      }),
+      isAdmin
+        ? Promise.all([
+            prisma.user.count(),
+            prisma.skuMaster.count(),
+            prisma.siteMaster.count(),
+            prisma.customFieldDef.count(),
+          ])
+        : null,
+    ]);
 
-  const recentSubmissions = await prisma.submission.findMany({
-    where,
-    include: { user: { select: { name: true } } },
-    orderBy: { submittedAt: "desc" },
-    take: 5,
-  });
+  const [userCount, skuCount, siteCount, fieldCount] = adminStats ?? [0, 0, 0, 0];
 
   return (
     <div className="space-y-6">
@@ -68,19 +78,19 @@ export default async function DashboardPage() {
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="text-muted-foreground">Total Users</span>
-                <p className="text-lg font-bold">{await prisma.user.count()}</p>
+                <p className="text-lg font-bold">{userCount}</p>
               </div>
               <div>
                 <span className="text-muted-foreground">SKU Master Records</span>
-                <p className="text-lg font-bold">{await prisma.skuMaster.count()}</p>
+                <p className="text-lg font-bold">{skuCount}</p>
               </div>
               <div>
                 <span className="text-muted-foreground">Site Master Records</span>
-                <p className="text-lg font-bold">{await prisma.siteMaster.count()}</p>
+                <p className="text-lg font-bold">{siteCount}</p>
               </div>
               <div>
                 <span className="text-muted-foreground">Custom Fields</span>
-                <p className="text-lg font-bold">{await prisma.customFieldDef.count()}</p>
+                <p className="text-lg font-bold">{fieldCount}</p>
               </div>
             </div>
           </CardContent>
