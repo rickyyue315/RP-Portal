@@ -1,25 +1,10 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+const publicPaths = ["/login", "/register", "/setup"];
+
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-
-  if (
-    pathname.startsWith("/login") ||
-    pathname.startsWith("/register") ||
-    pathname.startsWith("/setup") ||
-    pathname.startsWith("/api/setup") ||
-    pathname.startsWith("/api/auth")
-  ) {
-    const sessionToken =
-      req.cookies.get("authjs.session-token")?.value ||
-      req.cookies.get("__Secure-authjs.session-token")?.value;
-
-    if (sessionToken && !pathname.startsWith("/api")) {
-      return NextResponse.redirect(new URL("/dashboard", req.url));
-    }
-    return NextResponse.next();
-  }
 
   if (
     pathname.startsWith("/_next") ||
@@ -28,12 +13,31 @@ export function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
+  const isApiPublic =
+    pathname.startsWith("/api/setup") ||
+    pathname.startsWith("/api/auth");
+
+  const isPublicPath = publicPaths.some((p) => pathname.startsWith(p));
+
+  if (isPublicPath || isApiPublic) {
+    const sessionToken =
+      req.cookies.get("authjs.session-token")?.value ||
+      req.cookies.get("__Secure-authjs.session-token")?.value;
+
+    if (sessionToken && !isApiPublic) {
+      return NextResponse.redirect(new URL("/dashboard", req.url));
+    }
+    return NextResponse.next();
+  }
+
   const sessionToken =
     req.cookies.get("authjs.session-token")?.value ||
     req.cookies.get("__Secure-authjs.session-token")?.value;
 
   if (!sessionToken) {
-    return NextResponse.redirect(new URL("/login", req.url));
+    const loginUrl = new URL("/login", req.url);
+    loginUrl.searchParams.set("callbackUrl", pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
   return NextResponse.next();

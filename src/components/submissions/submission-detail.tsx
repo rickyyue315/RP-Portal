@@ -19,6 +19,12 @@ export function SubmissionDetail({ id, isAdmin, userId }: SubmissionDetailProps)
   const router = useRouter();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [navigating, setNavigating] = useState(false);
+
+  function navigateTo(href: string) {
+    setNavigating(true);
+    router.push(href);
+  }
 
   useEffect(() => {
     fetch(`/api/submissions/${id}`)
@@ -54,22 +60,27 @@ export function SubmissionDetail({ id, isAdmin, userId }: SubmissionDetailProps)
     const res = await fetch(`/api/submissions/${id}`, { method: "DELETE" });
     if (res.ok) {
       toast.success("Submission deleted");
-      router.push("/submissions");
+      navigateTo("/submissions");
     } else {
       toast.error("Failed to delete");
     }
   }
 
   return (
-    <div className="space-y-6">
+    <div className="relative space-y-6">
+      {navigating && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/60 backdrop-blur-sm">
+          <p className="text-sm text-muted-foreground animate-pulse">Loading...</p>
+        </div>
+      )}
       <div className="flex items-center justify-between">
-        <Button variant="ghost" onClick={() => router.push("/submissions")}>
+        <Button variant="ghost" onClick={() => navigateTo("/submissions")}>
           <ArrowLeft className="mr-1 h-4 w-4" />
           Back
         </Button>
         <div className="flex gap-2">
           {canEdit && (
-            <Button variant="outline" onClick={() => router.push(`/submissions/${id}/edit`)}>
+            <Button variant="outline" onClick={() => navigateTo(`/submissions/${id}/edit`)}>
               <Edit className="mr-1 h-4 w-4" />
               Edit
             </Button>

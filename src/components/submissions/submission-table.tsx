@@ -39,6 +39,7 @@ export function SubmissionTable({ isAdmin }: SubmissionTableProps) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [loading, setLoading] = useState(true);
+  const [navigating, setNavigating] = useState(false);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -93,7 +94,12 @@ export function SubmissionTable({ isAdmin }: SubmissionTableProps) {
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="relative space-y-4">
+      {navigating && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/60 backdrop-blur-sm">
+          <p className="text-sm text-muted-foreground animate-pulse">Loading...</p>
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="relative">
@@ -143,7 +149,10 @@ export function SubmissionTable({ isAdmin }: SubmissionTableProps) {
           data={data}
           pagination={pagination}
           onPageChange={(page) => setPagination((p) => ({ ...p, page }))}
-          onRowClick={(item) => router.push(`/submissions/${(item as unknown as SubmissionItem).id}`)}
+          onRowClick={(item) => {
+            setNavigating(true);
+            router.push(`/submissions/${(item as unknown as SubmissionItem).id}`);
+          }}
         />
       )}
     </div>
