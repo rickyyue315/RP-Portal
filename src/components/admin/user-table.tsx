@@ -80,8 +80,8 @@ export function UserTable({ currentUserRole, currentUserId }: UserTableProps) {
       return;
     }
 
-    if (pwNewPassword.length < 8) {
-      toast.error("Password must be at least 8 characters");
+    if (pwNewPassword.length < 8 || pwNewPassword.length > 12) {
+      toast.error("Password must be 8–12 characters");
       return;
     }
 
@@ -319,9 +319,11 @@ export function UserTable({ currentUserRole, currentUserId }: UserTableProps) {
                     value={newUserPassword}
                     onChange={(e) => setNewUserPassword(e.target.value)}
                     required
-                    placeholder="Min 8 characters"
+                    placeholder="8–12 characters"
                     minLength={8}
+                    maxLength={12}
                   />
+                  <p className="text-xs text-muted-foreground">Password must be 8–12 characters.</p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="new-role">Role</Label>
@@ -360,9 +362,11 @@ export function UserTable({ currentUserRole, currentUserId }: UserTableProps) {
                 value={pwNewPassword}
                 onChange={(e) => setPwNewPassword(e.target.value)}
                 required
-                placeholder="Min 8 characters"
+                placeholder="8–12 characters"
                 minLength={8}
+                maxLength={12}
               />
+              <p className="text-xs text-muted-foreground">Password must be 8–12 characters.</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="pw-confirm">Confirm New Password</Label>
@@ -374,6 +378,7 @@ export function UserTable({ currentUserRole, currentUserId }: UserTableProps) {
                 required
                 placeholder="Re-enter password"
                 minLength={8}
+                maxLength={12}
               />
             </div>
             <Button type="submit" className="w-full" disabled={pwLoading}>
