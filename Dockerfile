@@ -38,4 +38,4 @@ EXPOSE 8080
 ENV PORT=8080
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["sh", "-c", "prisma migrate deploy && node server.js"]
+CMD ["node", "server.js"]
